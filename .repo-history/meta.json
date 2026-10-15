@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "active_task": null,
-  "latest_task": "2026-10-15-mit-license",
+  "active_task": "2026-10-15-capability-protocol",
+  "latest_task": "2026-10-15-capability-protocol",
   "tasks": [
     {
       "id": "2026-10-15-package-skill",
@@ -38,6 +38,19 @@
         "LICENSE",
         "README.md",
         "skills/repo-supervisor/SKILL.md"
+      ]
+    },
+    {
+      "id": "2026-10-15-capability-protocol",
+      "title": "Add capability-aware execution and evidence protocol",
+      "status": "ready-for-review",
+      "entry_file": ".repo-history/tasks/2026-10-15-capability-protocol.md",
+      "last_update": "2026-10-15",
+      "branch": "main",
+      "next_entry_points": [
+        "skills/repo-supervisor/SKILL.md",
+        "skills/repo-supervisor/references/execution-protocol.md",
+        "skills/repo-supervisor/references/continuity-and-evidence.md"
       ]
     }
   ]

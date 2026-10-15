@@ -7,10 +7,22 @@
 ```text
 skills/repo-supervisor/
 ├── SKILL.md
-└── agents/openai.yaml
+├── agents/openai.yaml
+└── references/
+    ├── execution-protocol.md
+    └── continuity-and-evidence.md
 ```
 
 스킬은 `.repo-history`를 통한 작업 재개, 독립 작업의 병렬 처리, 런타임 검증, 문서와 구현의 정합성 감사, 검증된 변경의 커밋·푸시·병합 절차를 제공합니다. 사용 가능한 도구와 저장소 규칙에 따라 실행합니다.
+
+## 작업 계약과 재개
+
+모델명을 고정하지 않고 사용 환경에서 구성한 역량 프로필로 작업을 배정합니다. 필수 역량·권한·컨텍스트 예산을 먼저 확인하고, 한 목표·제한된 쓰기 범위·입출력·수용 기준·의존성·중단 조건을 담은 작업 패킷을 사용합니다. 설계와 불확실성 해소는 조정자가 맡고, 독립 구현과 검수는 계약과 쓰기 경계가 준비된 경우에 나눕니다.
+
+- [실행 프로토콜과 합성 예제](skills/repo-supervisor/references/execution-protocol.md): 프로필 선택, 의존성 그래프 검증, 단일 작성자, 재시도·재분해·통합 검수.
+- [체크포인트와 증거 상태](skills/repo-supervisor/references/continuity-and-evidence.md): 중복 방지, 작업 재개, baseline 비교, 일시 장애와 실패 구분, revision별 완료·전달 상태.
+
+이는 스킬이 따르는 수동 실행 계약이며 자동 스케줄러는 아닙니다. 단순 변경은 직접 처리하고, 위임 도구가 없으면 같은 계약으로 순차 실행합니다. 단위 테스트 성공과 실제 사용자 흐름의 수용 기준 충족을 구분합니다.
 
 ## 설치
 

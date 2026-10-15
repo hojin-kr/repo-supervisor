@@ -1,4 +1,4 @@
 interface:
   display_name: "Repo Supervisor"
   short_description: "Resume indexed work, verify, then safely deliver changes"
-  default_prompt: "Use $repo-supervisor to resume this repository from .repo-history, triage and parallelize independent work, run relevant tests and simulator checks, then commit, push, and safely merge verified task units when repository gates allow."
+  default_prompt: "Use $repo-supervisor to resume this repository from .repo-history, size work to available capabilities, verify observable acceptance criteria, then commit, push, and safely merge verified task units when repository gates allow."
