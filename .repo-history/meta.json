@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "active_task": "2026-10-15-capability-protocol",
+  "active_task": null,
   "latest_task": "2026-10-15-capability-protocol",
   "tasks": [
     {
@@ -43,7 +43,7 @@
     {
       "id": "2026-10-15-capability-protocol",
       "title": "Add capability-aware execution and evidence protocol",
-      "status": "ready-for-review",
+      "status": "completed",
       "entry_file": ".repo-history/tasks/2026-10-15-capability-protocol.md",
       "last_update": "2026-10-15",
       "branch": "main",
@@ -51,7 +51,8 @@
         "skills/repo-supervisor/SKILL.md",
         "skills/repo-supervisor/references/execution-protocol.md",
         "skills/repo-supervisor/references/continuity-and-evidence.md"
-      ]
+      ],
+      "commit": "116735113df890162cad0df10ccc083b3be85756"
     }
   ]
 }
