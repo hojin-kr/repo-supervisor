@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "active_task": null,
-  "latest_task": "2026-10-15-package-skill",
+  "latest_task": "2026-10-15-public-readiness",
   "tasks": [
     {
       "id": "2026-10-15-package-skill",
@@ -10,7 +10,22 @@
       "entry_file": ".repo-history/tasks/2026-10-15-package-skill.md",
       "last_update": "2026-10-15",
       "branch": "main",
-      "next_entry_points": ["README.md", "skills/repo-supervisor/SKILL.md"]
+      "next_entry_points": [
+        "README.md",
+        "skills/repo-supervisor/SKILL.md"
+      ]
+    },
+    {
+      "id": "2026-10-15-public-readiness",
+      "title": "Review public release readiness and simplify README",
+      "status": "completed",
+      "entry_file": ".repo-history/tasks/2026-10-15-public-readiness.md",
+      "last_update": "2026-10-15",
+      "branch": "main",
+      "next_entry_points": [
+        "README.md",
+        "skills/repo-supervisor/SKILL.md"
+      ]
     }
   ]
 }
