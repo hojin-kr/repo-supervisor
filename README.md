@@ -45,9 +45,9 @@ $repo-supervisor 요청한 기능을 구현하고 필요한 검증을 거쳐 작
 - 원격: `https://github.com/hojin-kr/repo-supervisor.git`
 - 로컬 Git 작성자 이메일: `jhj377@gmail.com`
 - GitHub CLI의 인증 계정은 `hojin-kr`로 확인했습니다. 공개 프로필의 이메일은 비어 있어 위 이메일과 계정의 연결은 확인하지 못했습니다.
-- 2026-10-15에 `hojin-kr/repo-supervisor` 비공개 원격 저장소를 생성했습니다. 푸시는 아직 수행하지 않았습니다. 라이선스는 공개 배포 전에 결정해야 합니다.
+- 2026-10-15에 `hojin-kr/repo-supervisor` 비공개 원격 저장소를 생성하고 `main`을 푸시했습니다. 라이선스는 공개 배포 전에 결정해야 합니다.
 
-다음 명령으로 준비된 내용을 원격 저장소에 올릴 수 있습니다.
+후속 변경을 커밋한 뒤 다음 명령으로 원격 저장소에 올릴 수 있습니다.
 
 ```sh
 git push -u origin main
