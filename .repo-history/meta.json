@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "active_task": null,
+  "latest_task": "2026-10-15-package-skill",
+  "tasks": [
+    {
+      "id": "2026-10-15-package-skill",
+      "title": "Prepare standalone Codex skill repository",
+      "status": "prepared",
+      "entry_file": ".repo-history/tasks/2026-10-15-package-skill.md",
+      "last_update": "2026-10-15",
+      "branch": "main",
+      "next_entry_points": ["README.md", "skills/repo-supervisor/SKILL.md"]
+    }
+  ]
+}
