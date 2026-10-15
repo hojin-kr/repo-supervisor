@@ -1,5 +1,6 @@
 ---
 name: repo-supervisor
+license: MIT
 description: Supervise repository work from indexed history and triage through parallel implementation, runtime verification, and task-sized commits, pushes, and safe merges. Use when coordinating or delivering repository changes.
 ---
 
