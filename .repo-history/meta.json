@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "active_task": null,
-  "latest_task": "2026-10-15-capability-protocol",
+  "latest_task": "2026-10-15-standing-delivery-contract",
   "tasks": [
     {
       "id": "2026-10-15-package-skill",
@@ -53,6 +53,18 @@
         "skills/repo-supervisor/references/continuity-and-evidence.md"
       ],
       "commit": "116735113df890162cad0df10ccc083b3be85756"
+    },
+    {
+      "id": "2026-10-15-standing-delivery-contract",
+      "title": "Clarify standing delivery authorization",
+      "status": "completed",
+      "entry_file": ".repo-history/tasks/2026-10-15-standing-delivery-contract.md",
+      "last_update": "2026-10-15",
+      "branch": "main",
+      "next_entry_points": [
+        "README.md",
+        "skills/repo-supervisor/SKILL.md"
+      ]
     }
   ]
 }
