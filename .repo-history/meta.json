@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "active_task": null,
-  "latest_task": "2026-10-15-standing-delivery-contract",
+  "active_task": "2026-10-17-structural-verification",
+  "latest_task": "2026-10-17-structural-verification",
   "tasks": [
     {
       "id": "2026-10-15-package-skill",
@@ -64,6 +64,19 @@
       "next_entry_points": [
         "README.md",
         "skills/repo-supervisor/SKILL.md"
+      ]
+    },
+    {
+      "id": "2026-10-17-structural-verification",
+      "title": "Encode structural lessons and snapshot-bound verification",
+      "status": "ready-for-review",
+      "entry_file": ".repo-history/tasks/2026-10-17-structural-verification.md",
+      "last_update": "2026-10-17",
+      "branch": "main",
+      "next_entry_points": [
+        "skills/repo-supervisor/scripts/verify.py",
+        "tests/test_verify.py",
+        "skills/repo-supervisor/references/verification.md"
       ]
     }
   ]

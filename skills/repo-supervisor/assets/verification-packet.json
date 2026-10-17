@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "objective": "Replace this synthetic draft with one observable project outcome",
+  "inputs": ["Relevant source and independent requirement references"],
+  "write_scope": ["Explicit allowed files or symbols"],
+  "invariants": ["Prior saved data survives a rejected update"],
+  "environment": "Replace with runtime, configuration and isolated fixture identity",
+  "checks": [
+    {
+      "id": "saved-state",
+      "invariant": "Prior saved data survives a rejected update",
+      "argv": null,
+      "expected_exit": 0,
+      "stdout_contains": ["Observed saved value after reopening matches the prior value"],
+      "timeout_seconds": 30
+    }
+  ]
+}

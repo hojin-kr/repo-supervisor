@@ -34,6 +34,8 @@ inputs: [Contract version and relevant source or evidence references]
 context_budget: Budget and what to omit or fetch on demand
 write_scope: [Allowed files or narrowly defined symbols]
 forbidden: [Unrelated refactors, user data, contract changes]
+invariants: [State or boundary that must remain true]
+verification_packet: Optional path to the linked command/evidence packet
 output: Patch or commit plus evidence and unresolved issues
 acceptance: [Command or user flow, expected observable result]
 depends_on: [U1]
@@ -43,7 +45,7 @@ retry_budget: A finite task-appropriate attempt limit
 redecomposition_budget: A finite limit inherited by replacement packets
 ```
 
-For each dependency edge, specify the producer's output, version, and consumer assumptions (types, error semantics, state invariants, fixtures). A dependency is satisfied by a verified output, not a worker's completion message. Include an integration unit that exercises the combined user flow. A table of IDs and edges is sufficient; no orchestration service is required.
+For each dependency edge, specify the producer's output, version, and consumer assumptions (types, error semantics, state invariants, fixtures). For command-driven acceptance, link a [verification packet](verification.md) containing the exact command, expected result, environment identity, and snapshot-bound report. A dependency is satisfied by a verified output, not a worker's completion message. Include an integration unit that exercises the combined user flow. A table of IDs and edges is sufficient; no orchestration service is required.
 
 ## Dispatch, reconcile, and recover
 
