@@ -135,13 +135,32 @@ class VerificationCLI(unittest.TestCase):
                 self.assert_blocked(self.call())
                 self.assertFalse(self.report.exists())
 
-    def test_source_mutation_during_run_blocks_but_retains_evidence(self):
+    def test_source_change_remaining_at_snapshot_blocks_and_retains_evidence(self):
         self.packet['checks'][0]['argv'] = [sys.executable, '-c',
             "from pathlib import Path; Path('record.txt').write_text('changed'); print('saved-title')"]
         self.assert_blocked(self.call())
         self.assertTrue(self.report.is_file())
         data = json.loads(self.report.read_text())
         self.assertNotEqual(data['before'], data['after'])
+
+    def test_transient_change_restored_between_snapshots_is_not_detected(self):
+        self.packet['checks'][0]['argv'] = [sys.executable, '-c', """
+from pathlib import Path
+path = Path('record.txt')
+original = path.read_bytes()
+try:
+    path.write_text('transient-title')
+    print(path.read_text())
+finally:
+    path.write_bytes(original)
+"""]
+        self.packet['checks'][0]['stdout_contains'] = ['transient-title']
+        self.assertEqual(self.call().returncode, 0)
+        data = json.loads(self.report.read_text())
+        self.assertEqual(data['before'], data['after'])
+        self.assertEqual(data['observations'][0]['stdout'], 'transient-title\n')
+        self.assertEqual((self.repo / 'record.txt').read_text(), 'saved-title\n')
+        self.assertEqual(self.call('check').returncode, 0)
 
     def test_report_is_external_and_never_overwritten(self):
         self.assert_blocked(self.call(report=self.repo / 'evidence.json'))

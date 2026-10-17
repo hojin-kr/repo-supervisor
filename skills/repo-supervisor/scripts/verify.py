@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run an explicitly trusted packet; reject incomplete or stale local evidence."""
+"""Run trusted checks; compare boundary snapshots, without continuous mutation monitoring."""
 import argparse
 import hashlib
 import json
