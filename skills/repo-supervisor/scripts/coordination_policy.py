@@ -36,14 +36,39 @@ def digest(value):
 
 
 def external(repo, path):
-    path = Path(path).absolute()
     repo = Path(repo).resolve()
-    allow(repo != path and repo not in path.parents, 'private_location_inside_checkout')
-    resolved = path.resolve()
-    allow(repo != resolved and repo not in resolved.parents, 'private_location_inside_checkout')
-    allow(not any(parent.name == '.git' or (parent / '.git').exists()
-                  for parent in [resolved, *resolved.parents]), 'private_location_inside_git')
-    return resolved
+
+    def check(candidate):
+        allow(repo != candidate and repo not in candidate.parents, 'private_location_inside_checkout')
+        allow(not any(parent.name == '.git' or (parent / '.git').exists()
+                      for parent in [candidate, *candidate.parents]), 'private_location_inside_git')
+
+    original = Path(path).absolute()
+    current = Path(original.anchor)
+    pending = list(original.parts[1:])
+    links = 0
+    check(current)
+    while pending:
+        part = pending.pop(0)
+        if part == '..':
+            current = current.parent
+            check(current)
+            continue
+        candidate = current / part
+        check(candidate)
+        if candidate.is_symlink():
+            links += 1
+            allow(links <= 40, 'private_path_symlink_loop')
+            target = Path(os.readlink(candidate))
+            if target.is_absolute():
+                current = Path(target.anchor)
+                check(current)
+                pending = list(target.parts[1:]) + pending
+            else:
+                pending = list(target.parts) + pending
+        else:
+            current = candidate
+    return current
 
 
 def private_config(repo, path):
@@ -219,7 +244,9 @@ class ProviderClaims:
                       'stop_unconfirmed_or_cooldown')
                 allow(len(prior['attempts']) < self.policy.max_attempts, 'attempt_budget_exhausted')
                 if prior['status'] != 'quota_wait':
-                    allow(primary.model == prior['model'], 'retry_must_keep_exact_model')
+                    allow(primary.model == prior['model']
+                          and {role: quote.model for role, quote in auxiliaries.items()} == prior['auxiliaries'],
+                          'retry_must_keep_exact_model')
                 attempts = prior['attempts']
             else:
                 allow(not resume, 'missing_checkpoint')

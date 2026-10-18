@@ -169,6 +169,18 @@ class PolicyTests(unittest.TestCase):
         with self.assertRaisesRegex(p.Denied, 'writer_already_claimed'):
             self.begin(task='unit-b')
 
+    def test_response_or_dispatch_completion_does_not_release_unstopped_writer(self):
+        run = self.begin()
+        before = self.state()['tasks']['unit-a']['checkpoint']
+        self.finish(run, 'worker_done', stopped=False)
+        record = self.state()['tasks']['unit-a']
+        self.assertEqual(record['receipt']['outcome'], 'worker_done')
+        self.assertEqual(record['status'], 'stop_unknown')
+        self.assertEqual(record['checkpoint'], before)
+        self.assertTrue(self.state()['writers'])
+        with self.assertRaisesRegex(p.Denied, 'writer_already_claimed'):
+            self.begin(task='different-task')
+
     def test_cooldown_budget_policy_drift_and_attempt_receipts_persist(self):
         run = self.begin()
         self.finish(run, 'network')
@@ -261,6 +273,57 @@ class PolicyTests(unittest.TestCase):
         config.chmod(0o644)
         with self.assertRaises(p.Denied):
             p.private_config(self.repo, config)
+
+    def test_private_paths_reject_checkout_aliases_and_intermediate_links(self):
+        private = self.base / 'private-bindings'
+        private.mkdir(mode=0o700)
+        config = private / 'binding.json'
+        config.write_text('{}')
+        config.chmod(0o600)
+        other = self.base / 'other-checkout'
+        other.mkdir()
+        subprocess.run(['git', '-C', str(other), 'init', '-q'], check=True, capture_output=True)
+        for index, checkout in enumerate((self.repo, other)):
+            (checkout / 'binding.json').symlink_to(config)
+            (checkout / 'external-dir').symlink_to(private, target_is_directory=True)
+            checkout_alias = self.base / ('checkout-alias-' + str(index))
+            checkout_alias.symlink_to(checkout, target_is_directory=True)
+            chained_alias = self.base / ('chained-alias-' + str(index))
+            chained_alias.symlink_to(checkout / 'external-dir', target_is_directory=True)
+            for path in (checkout_alias / 'binding.json', chained_alias / 'binding.json'):
+                with self.subTest(path_kind=path.parent.name), self.assertRaises(p.Denied):
+                    p.private_config(self.repo, path)
+            with self.assertRaises(p.Denied):
+                p.LocalLedger(self.repo, chained_alias / 'new-state')
+            self.assertFalse((private / 'new-state').exists())
+
+    def test_external_non_git_symlink_alias_is_usable(self):
+        folder = self.base / 'private-bindings'
+        folder.mkdir(mode=0o700)
+        config = folder / 'binding.json'
+        config.write_text('{}')
+        config.chmod(0o600)
+        outside_alias = self.base / 'outside-alias'
+        outside_alias.symlink_to(folder, target_is_directory=True)
+        self.assertEqual(p.private_config(self.repo, outside_alias / 'binding.json'), {})
+        self.assertEqual(p.LocalLedger(self.repo, outside_alias / 'state').directory,
+                         (folder / 'state').resolve())
+
+    def test_non_quota_retry_preserves_primary_and_auxiliary_mapping(self):
+        for outcome in ('network', 'stopped'):
+            task = 'unit-' + outcome
+            run = self.begin(task=task)
+            self.claims.finish(task, run, self.quote.model, outcome, True, 100,
+                               stop_receipt_sha256='b' * 64)
+            with self.assertRaisesRegex(p.Denied, 'retry_must_keep_exact_model'):
+                self.claims.begin(task, hashlib.sha256(task.encode()).hexdigest(), 'writer-a',
+                    self.quote, {'auxiliary': replace(self.quote, model='provider/model-b')},
+                    106, resume=True)
+            self.assertEqual(len(self.state()['tasks'][task]['attempts']), 1)
+            retry = self.begin(task=task, now=106, resume=True)
+            self.assertEqual(self.state()['tasks'][task]['auxiliaries'], {'auxiliary': self.quote.model})
+            self.claims.finish(task, retry, self.quote.model, 'worker_done', True, 106,
+                               stop_receipt_sha256='b' * 64)
 
     def test_private_state_cannot_be_placed_in_another_git_checkout(self):
         other = self.base / 'other-checkout'
