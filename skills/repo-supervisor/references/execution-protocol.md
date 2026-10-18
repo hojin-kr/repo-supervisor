@@ -55,6 +55,8 @@ For each dependency edge, specify the producer's output, version, and consumer a
 4. Retry a transient tool failure only within the packet's budget, preserving the same candidate and evidence. For ambiguity, excessive context, repeated failed checks, or a contract change, stop the executor. The coordinator either resolves uncertainty, re-decomposes into new versioned packets, or escalates to a stronger suitable profile. Persist each attempt with packet ID, candidate revision, cause, outcome, and remaining retry/redecomposition budgets before redispatch. Replacement packets inherit the remaining recovery budget; changing IDs must not reset it. Record the reason and superseded IDs so retries cannot run alongside replacements. Budget exhaustion leaves the work blocked for a coordinator decision; do not automatically restart it. If no suitable profile is available, mark blocked instead of looping.
 5. On the integrated fixed candidate, run relevant consolidated tests and the actual acceptance flow. Independent review checks both the diff and observations, including failure and boundary paths. A changed candidate invalidates affected review and evidence; repeat only the affected checks plus required integration gates. Publish only after required gates pass.
 
+For provider-controlled units or artifact placement, apply [provider/storage policy](provider-storage-policy.md) before dispatch. Keep actual bindings, receipts, and raw observations in an external local ledger. This does not change the execution packet or the strict verification schema.
+
 ## Synthetic worked example
 
 Request: a local record editor must reject a blank title and preserve the last saved record after a rejected save.

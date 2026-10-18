@@ -8,12 +8,15 @@
 skills/repo-supervisor/
 ├── SKILL.md
 ├── agents/openai.yaml
-├── scripts/verify.py
+├── scripts/
+│   ├── verify.py
+│   └── coordination_policy.py
 ├── assets/verification-packet.json
 └── references/
     ├── execution-protocol.md
     ├── continuity-and-evidence.md
-    └── verification.md
+    ├── verification.md
+    └── provider-storage-policy.md
 ```
 
 스킬은 `.repo-history`를 통한 작업 재개, 독립 작업의 병렬 처리, 런타임 검증, 문서와 구현의 정합성 감사, 검증된 변경의 커밋·푸시·병합 절차를 제공합니다. 사용 가능한 도구와 저장소 규칙에 따라 실행합니다.
@@ -48,6 +51,12 @@ PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -v
 ```
 
 pstack의 원칙을 참고해 독자적으로 작성했으며, [고정 revision의 1차 자료와 MIT 라이선스](skills/repo-supervisor/references/verification.md#sources-and-adaptation-boundaries)를 기록했습니다. pstack 설치·모델 기본값·외부 작업 권한은 채택하지 않습니다.
+
+## 공용 정책과 로컬 실행 정보 분리
+
+공용 저장소에는 범용 정책·합성 예제·테스트만 두고, 실제 계정/모델 바인딩·볼륨 식별자·호스트 경로·설정·상태·원시 로그는 모든 Git checkout 밖의 로컬 위치에서 주입합니다. [provider/storage 정책](skills/repo-supervisor/references/provider-storage-policy.md)과 작은 정책 모듈은 비용/역량 유효성, 단일 작성자, 중단 확인 후 인계, 재시도 예산, 볼륨 관측·공간 예약·복구 비교를 다룹니다. 기존 작업 패킷과 strict v1 검증 도구를 재사용하며 별도 실행기는 만들지 않습니다.
+
+현재 검증 범위는 합성 상태 전이와 로컬 저장 경계입니다. 실제 provider launch/stop, 모델·과금 관측, 물리 mount 검사와 파일 이동 adapter는 제공하지 않으며 live 실행은 차단됩니다. 이동 결정은 원본 보존을 기본으로 하고 영구삭제를 승인하지 않습니다.
 
 ## 설치
 

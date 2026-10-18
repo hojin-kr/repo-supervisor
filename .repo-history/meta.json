@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "active_task": "2026-10-17-structural-verification",
-  "latest_task": "2026-10-17-structural-verification",
+  "active_task": "2026-10-18-provider-storage-policy",
+  "latest_task": "2026-10-18-provider-storage-policy",
   "tasks": [
     {
       "id": "2026-10-15-package-skill",
@@ -69,7 +69,7 @@
     {
       "id": "2026-10-17-structural-verification",
       "title": "Encode structural lessons and snapshot-bound verification",
-      "status": "ready-for-review",
+      "status": "completed",
       "entry_file": ".repo-history/tasks/2026-10-17-structural-verification.md",
       "last_update": "2026-10-17",
       "branch": "main",
@@ -77,6 +77,21 @@
         "skills/repo-supervisor/scripts/verify.py",
         "tests/test_verify.py",
         "skills/repo-supervisor/references/verification.md"
+      ],
+      "commit": "4c05849cae60a2cbf5deffdeeb8a70602c5d994d"
+    },
+    {
+      "id": "2026-10-18-provider-storage-policy",
+      "title": "Separate public coordination policy from private runtime storage",
+      "status": "ready-for-review",
+      "entry_file": ".repo-history/tasks/2026-10-18-provider-storage-policy.md",
+      "last_update": "2026-10-18",
+      "branch": "provider-storage-policy",
+      "next_entry_points": [
+        "skills/repo-supervisor/scripts/coordination_policy.py",
+        "tests/test_coordination_policy.py",
+        "tests/test_public_boundary.py",
+        "skills/repo-supervisor/references/provider-storage-policy.md"
       ]
     }
   ]
