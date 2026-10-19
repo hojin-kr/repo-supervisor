@@ -1,9 +1,6 @@
-"""Synthetic state transitions; no live adapter, mount probe, process, or relocation."""
+"""Synthetic storage boundaries; no mount probe, process, or relocation."""
 from dataclasses import replace
-from decimal import Decimal
-import hashlib
 import json
-import shutil
 from pathlib import Path
 import subprocess
 import sys
@@ -15,7 +12,7 @@ sys.path.insert(0, str(SCRIPTS))
 import coordination_policy as p
 
 
-class PolicyTests(unittest.TestCase):
+class StorageTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
@@ -29,196 +26,24 @@ class PolicyTests(unittest.TestCase):
         subprocess.run(['git', '-C', str(self.repo), 'add', '.'], check=True)
         subprocess.run(['git', '-C', str(self.repo), 'commit', '-qm', 'Synthetic baseline'], check=True)
         self.ledger = p.LocalLedger(self.repo, self.base / 'private-state')
-        self.policy = p.ProviderPolicy(frozenset({'provider/model-a', 'provider/model-b'}),
-            frozenset({'bounded-edit'}), 'credit', 1000, Decimal('0'), 30,
-            frozenset({'auxiliary'}), 2, 5)
-        self.quote = p.Quote('provider/model-a', frozenset({'bounded-edit'}), Decimal('0'),
-                             Decimal('0'), 'credit', 1000, 90, 120)
-        self.claims = p.ProviderClaims(self.ledger, self.policy)
         self.mount = self.base / 'synthetic-volume'
         self.mount.mkdir()
         self.volume = p.VolumeObservation(self.mount, 'volume-a', True, True,
                                            frozenset({'permissions', 'extended-metadata'}), 1000, 100)
         self.storage = p.StoragePolicy('volume-a', frozenset({'permissions', 'extended-metadata'}), 10, 100)
 
-    def begin(self, task='unit-a', now=100, resume=False, quote=None, live=False):
-        return self.claims.begin(task, hashlib.sha256(task.encode()).hexdigest(), 'writer-a', quote or self.quote,
-                                {'auxiliary': self.quote}, now, resume=resume, live=live)
-
-    def finish(self, run, outcome, stopped=True, now=100):
-        self.claims.finish('unit-a', run, 'provider/model-a', outcome, stopped, now,
-                           stop_receipt_sha256='b' * 64 if stopped else None)
-
     def state(self):
         with self.ledger.transaction() as state:
             return json.loads(json.dumps(state))
 
-    def test_policy_denial_is_terminal_not_quota(self):
-        self.assertEqual(p.classify(429, 'POLICY_DENIED'), 'policy_denied')
-        run = self.begin()
-        self.finish(run, 'policy_denied')
-        self.assertEqual(self.state()['tasks']['unit-a']['status'], 'policy_denied')
-        for quote in (self.quote, replace(self.quote, model='provider/model-b')):
-            with self.assertRaisesRegex(p.Denied, 'policy_denied_terminal'):
-                self.begin(now=106, resume=True, quote=quote)
-        self.assertEqual(len(self.state()['tasks']['unit-a']['attempts']), 1)
-
-    def test_denial_latches_ledger_and_stop_confirmation_requires_receipt(self):
-        run = self.begin()
-        with self.assertRaisesRegex(p.Denied, 'stop_receipt_required'):
-            self.claims.finish('unit-a', run, self.quote.model, 'worker_done', True, 100)
-        self.finish(run, 'policy_denied')
-        with self.assertRaisesRegex(p.Denied, 'policy_denied_terminal'):
-            self.begin(task='different-task', now=106)
-
-    def test_classifier_never_uses_quota_prose(self):
-        for status, code, expected in [(401, 'QUOTA_EXHAUSTED', 'auth'),
-                (403, 'QUOTA_EXHAUSTED', 'forbidden'), (429, None, 'unknown'),
-                (429, 'RATE_LIMIT', 'quota'), (None, 'NETWORK_TIMEOUT', 'network'),
-                (None, 'TEST_FAILED', 'test_failed')]:
-            self.assertEqual(p.classify(status, code), expected)
-
-    def test_single_workspace_writer_and_duplicate_result(self):
-        run = self.begin()
-        with self.assertRaisesRegex(p.Denied, 'writer_already_claimed'):
-            self.begin(task='unit-b')
-        self.finish(run, 'worker_done')
-        with self.assertRaisesRegex(p.Denied, 'not_resumable'):
-            self.begin()
-        with self.assertRaisesRegex(p.Denied, 'receipt_identity_mismatch'):
-            self.finish(run, 'worker_done')
-
-    def test_new_alias_cannot_replay_the_same_contract(self):
-        run = self.begin()
-        self.finish(run, 'worker_done')
-        with self.assertRaisesRegex(p.Denied, 'duplicate_contract'):
-            self.claims.begin('different-alias', hashlib.sha256(b'unit-a').hexdigest(),
-                              'writer-b', self.quote, {'auxiliary': self.quote}, 106)
-
-    def test_excessive_cooldown_does_not_release_the_claim(self):
-        run = self.begin()
-        with self.assertRaisesRegex(p.Denied, 'cooldown'):
-            self.claims.finish('unit-a', run, self.quote.model, 'quota', True, 100, 4000, 'b' * 64)
-        self.assertEqual(self.state()['tasks']['unit-a']['status'], 'claimed')
-
-    def test_unknown_cost_expiry_exact_model_and_auxiliaries_block(self):
-        for quote in (replace(self.quote, input_rate=None), replace(self.quote, expires_at=100),
-                      replace(self.quote, observed_at=1), replace(self.quote, model='unlisted/model'),
-                      replace(self.quote, output_rate=Decimal('NaN')),
-                      replace(self.quote, capabilities=frozenset())):
-            with self.assertRaises(p.Denied):
-                self.begin(quote=quote)
-        with self.assertRaisesRegex(p.Denied, 'auxiliary'):
-            self.claims.begin('unit-a', 'a' * 64, 'writer-a', self.quote, {}, 100)
-        with self.assertRaisesRegex(p.Denied, 'cost'):
-            self.claims.begin('unit-a', 'a' * 64, 'writer-a', self.quote,
-                              {'auxiliary': replace(self.quote, input_rate=Decimal('1'))}, 100)
-        self.assertFalse(self.state()['tasks'])
-
-    def test_quota_units_and_meaning_are_explicit(self):
-        self.assertEqual(p.remaining_fraction(Decimal('25'), unit='percent', meaning='used'), Decimal('.75'))
-        self.assertEqual(p.remaining_fraction(Decimal('.25'), unit='fraction', meaning='remaining'), Decimal('.25'))
-        self.assertEqual(p.remaining_fraction(Decimal('1'), unit='fraction', meaning='remaining'), Decimal('1'))
-        self.assertEqual(p.remaining_fraction(Decimal('100'), unit='percent', meaning='used'), Decimal('0'))
-
-    def test_unknown_quota_units_or_values_are_not_guessed(self):
-        for unit, meaning, value in [('unknown', 'remaining', Decimal('1')),
-                ('percent', 'unknown', Decimal('1')), ('fraction', 'used', Decimal('25')),
-                ('fraction', 'remaining', Decimal('NaN')), ('fraction', 'used', True)]:
-            with self.assertRaises(p.Denied):
-                p.remaining_fraction(value, unit=unit, meaning=meaning)
-
-    def test_installed_policy_module_imports_without_a_provider_or_private_config(self):
-        installed = self.base / 'installed'
-        shutil.copytree(SCRIPTS.parent, installed)
-        done = subprocess.run([sys.executable, '-c',
-            "import sys; sys.path.insert(0, sys.argv[1]); import coordination_policy as p; "
-            "assert p.classify(429, 'POLICY_DENIED') == 'policy_denied'", str(installed / 'scripts')],
-            capture_output=True, text=True)
-        self.assertEqual(done.returncode, 0, done.stderr)
-        self.assertEqual(done.stdout, '')
-
-    def test_model_catalog_must_be_exact_and_typed(self):
-        for catalog in ('provider/model-a', frozenset({'provider/*'}), frozenset()):
-            self.claims.policy = replace(self.policy, models=catalog)
-            with self.assertRaisesRegex(p.Denied, 'exact_model_policy'):
-                self.begin()
-
-    def test_live_is_never_activated_by_a_flag(self):
-        with self.assertRaisesRegex(p.Denied, 'live_adapter_unverified'):
-            self.begin(live=True)
-        self.assertFalse(self.state()['tasks'])
-
-    def test_partial_and_test_failure_are_not_accepted_or_resumed(self):
-        for outcome in ('partial', 'test_failed', 'auth', 'forbidden', 'unknown'):
-            with self.subTest(outcome=outcome):
-                task = 'task-' + outcome.replace('_', '-')
-                run = self.begin(task=task)
-                self.claims.finish(task, run, self.quote.model, outcome, True, 100,
-                                   stop_receipt_sha256='b' * 64)
-                with self.assertRaisesRegex(p.Denied, 'not_resumable'):
-                    self.begin(task=task, resume=True, now=106)
-                self.assertEqual(self.state()['tasks'][task]['status'], outcome)
-
-    def test_receipt_identity_and_unconfirmed_stop_keep_writer(self):
-        run = self.begin()
-        with self.assertRaisesRegex(p.Denied, 'identity'):
-            self.finish('different-run', 'worker_done')
-        self.finish(run, 'network', stopped=False)
-        self.assertEqual(self.state()['tasks']['unit-a']['status'], 'stop_unknown')
-        with self.assertRaisesRegex(p.Denied, 'writer_already_claimed'):
-            self.begin(task='unit-b')
-
-    def test_response_or_dispatch_completion_does_not_release_unstopped_writer(self):
-        run = self.begin()
-        before = self.state()['tasks']['unit-a']['checkpoint']
-        self.finish(run, 'worker_done', stopped=False)
-        record = self.state()['tasks']['unit-a']
-        self.assertEqual(record['receipt']['outcome'], 'worker_done')
-        self.assertEqual(record['status'], 'stop_unknown')
-        self.assertEqual(record['checkpoint'], before)
-        self.assertTrue(self.state()['writers'])
-        with self.assertRaisesRegex(p.Denied, 'writer_already_claimed'):
-            self.begin(task='different-task')
-
-    def test_cooldown_budget_policy_drift_and_attempt_receipts_persist(self):
-        run = self.begin()
-        self.finish(run, 'network')
-        with self.assertRaisesRegex(p.Denied, 'cooldown'):
-            self.begin(now=102, resume=True)
-        with self.assertRaisesRegex(p.Denied, 'exact_model'):
-            self.begin(now=106, resume=True, quote=replace(self.quote, model='provider/model-b'))
-        run2 = self.begin(now=106, resume=True)
-        self.finish(run2, 'network', now=106)
-        with self.assertRaisesRegex(p.Denied, 'budget_exhausted'):
-            self.begin(now=112, resume=True)
-        attempts = self.state()['tasks']['unit-a']['attempts']
-        self.assertEqual([a['receipt']['outcome'] for a in attempts], ['network', 'network'])
-        self.claims.policy = replace(self.policy, max_attempts=3)
-        with self.assertRaisesRegex(p.Denied, 'drift'):
-            self.begin(now=112, resume=True)
-
-    def test_checkpoint_change_blocks_handoff(self):
-        run = self.begin()
-        self.finish(run, 'stopped')
-        (self.repo / 'input').write_text('changed by another writer')
-        with self.assertRaisesRegex(p.Denied, 'drift'):
-            self.begin(now=106, resume=True)
-
-    def test_quota_may_route_only_after_stopped_checkpoint_and_cooldown(self):
-        run = self.begin()
-        self.finish(run, 'quota')
-        self.begin(now=106, resume=True, quote=replace(self.quote, model='provider/model-b'))
-        self.assertEqual(self.state()['tasks']['unit-a']['model'], 'provider/model-b')
-
     def test_local_lock_is_exclusive_and_crash_lock_is_not_expired(self):
         with self.ledger.transaction():
             with self.assertRaisesRegex(p.Denied, 'ledger_busy'):
-                self.begin()
+                p.reserve(self.ledger, 'copy-a', self.storage, self.volume, 100, 100)
         lock = self.ledger.directory / 'lock'
         lock.mkdir()
         with self.assertRaisesRegex(p.Denied, 'ledger_busy'):
-            self.begin()
+            p.reserve(self.ledger, 'copy-a', self.storage, self.volume, 100, 100)
         lock.rmdir()
 
     def test_volume_mismatch_unmounted_fake_mount_and_metadata_fail_closed(self):
@@ -308,22 +133,6 @@ class PolicyTests(unittest.TestCase):
         self.assertEqual(p.private_config(self.repo, outside_alias / 'binding.json'), {})
         self.assertEqual(p.LocalLedger(self.repo, outside_alias / 'state').directory,
                          (folder / 'state').resolve())
-
-    def test_non_quota_retry_preserves_primary_and_auxiliary_mapping(self):
-        for outcome in ('network', 'stopped'):
-            task = 'unit-' + outcome
-            run = self.begin(task=task)
-            self.claims.finish(task, run, self.quote.model, outcome, True, 100,
-                               stop_receipt_sha256='b' * 64)
-            with self.assertRaisesRegex(p.Denied, 'retry_must_keep_exact_model'):
-                self.claims.begin(task, hashlib.sha256(task.encode()).hexdigest(), 'writer-a',
-                    self.quote, {'auxiliary': replace(self.quote, model='provider/model-b')},
-                    106, resume=True)
-            self.assertEqual(len(self.state()['tasks'][task]['attempts']), 1)
-            retry = self.begin(task=task, now=106, resume=True)
-            self.assertEqual(self.state()['tasks'][task]['auxiliaries'], {'auxiliary': self.quote.model})
-            self.claims.finish(task, retry, self.quote.model, 'worker_done', True, 106,
-                               stop_receipt_sha256='b' * 64)
 
     def test_private_state_cannot_be_placed_in_another_git_checkout(self):
         other = self.base / 'other-checkout'

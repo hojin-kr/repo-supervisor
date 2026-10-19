@@ -36,7 +36,7 @@ For each criterion record `expected -> observed`, candidate revision, environmen
 
 Classify a failure as introduced, reproduced on baseline, environment-related, or unresolved, using the same check and environment on an isolated baseline where practical. Never reset a user's dirty checkout or overwrite saves to obtain the comparison. A baseline failure does not excuse a newly failed core criterion; explain whether it prevents acceptance and stop delivery when a required gate remains unmet. If comparison cannot run, say unresolved rather than assuming regression or pre-existing failure.
 
-For provider lifecycle and storage observations, use [provider/storage policy](provider-storage-policy.md). A stop-confirmed receipt precedes checkpoint handoff; keep physical volume identities, account bindings, host paths, and raw logs outside Git. A public task note links only an approved nonidentifying summary.
+For storage observations, use [private storage policy](storage-policy.md). Confirm owned execution has stopped before checkpoint handoff; keep physical volume identities, host paths, and raw logs outside Git. A public task note links only an approved nonidentifying summary. A Codex limit never authorizes switching to another AI service.
 
 ## Scope and preservation
 

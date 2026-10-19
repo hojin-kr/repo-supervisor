@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "active_task": null,
-  "latest_task": "2026-10-18-provider-storage-policy",
+  "latest_task": "2026-10-19-codex-only",
   "tasks": [
     {
       "id": "2026-10-15-package-skill",
@@ -94,6 +94,19 @@
         "skills/repo-supervisor/references/provider-storage-policy.md"
       ],
       "commit": "d78848f82a05ce27dd5871ee5690492ee2722ab2"
+    },
+    {
+      "id": "2026-10-19-codex-only",
+      "title": "Restore Codex-only development and retain storage safeguards",
+      "status": "completed",
+      "entry_file": ".repo-history/tasks/2026-10-19-codex-only.md",
+      "last_update": "2026-10-19",
+      "branch": "main",
+      "next_entry_points": [
+        "skills/repo-supervisor/SKILL.md",
+        "skills/repo-supervisor/scripts/coordination_policy.py",
+        "tests/test_codex_only.py"
+      ]
     }
   ]
 }

@@ -4,7 +4,7 @@ Use this protocol for delegated or multi-step work. It is a manual contract, not
 
 ## Choose profiles and boundaries
 
-Configure profiles for the current environment. A profile contains a locally chosen model/tool binding, supported reasoning and editing tasks, a usable context budget, permitted tools, and known limitations. Do not assume a model's name, size, price, or advertised context proves suitability. Use observed task results to revise the binding; if suitability is unknown, use a bounded trial or retain the work with the supervisor.
+Configure profiles only from ChatGPT Codex models and available native tools. External AI services and quota-based service switching are outside this protocol. If Codex cannot proceed, checkpoint and report the blocker. A profile contains a locally chosen model/tool binding, supported reasoning and editing tasks, a usable context budget, permitted tools, and known limitations. Do not assume a model's name, size, price, or advertised context proves suitability. Use observed task results to revise the binding; if suitability is unknown, use a bounded trial or retain the work with the supervisor.
 
 - **Coordinator:** architecture, contracts, ambiguous requirements, decomposition, risk decisions, and integration. Prefer the strongest suitable reasoning capability available for these tasks.
 - **Bounded executor:** one well-understood objective with explicit inputs, limited write scope, and executable acceptance checks. Suitable for a smaller model only when the contract and context fit its demonstrated capability.
@@ -12,7 +12,7 @@ Configure profiles for the current environment. A profile contains a locally cho
 
 Split by coupling, risk, uncertainty, and context cost, not file count. A one-file security or state migration can need coordination; several mechanical files can be one bounded unit. Resolve uncertain interfaces first. Keep tightly coupled changes together if splitting would require shared mutable assumptions. Budget space for task instructions, relevant source, tool outputs, and the executor's work; reduce scope before dropping necessary context. Never split away the end-to-end acceptance obligation.
 
-## Routing and readiness gate
+## Capability and readiness gate
 
 For each profile, separate **hard constraints** (tool permissions, supported operation, known usable context budget, required reasoning capability) from **preferences** (latency, cost, familiarity). First eliminate profiles that fail or have unknown required constraints; then choose among eligible profiles by configured preferences. Do not infer missing capabilities from a model name. If none qualifies, create a read-only investigation packet to resolve unknowns, re-decompose the implementation, or mark blocked. Investigation returns evidence and a contract proposal; it does not grant write permission.
 
@@ -55,7 +55,7 @@ For each dependency edge, specify the producer's output, version, and consumer a
 4. Retry a transient tool failure only within the packet's budget, preserving the same candidate and evidence. For ambiguity, excessive context, repeated failed checks, or a contract change, stop the executor. The coordinator either resolves uncertainty, re-decomposes into new versioned packets, or escalates to a stronger suitable profile. Persist each attempt with packet ID, candidate revision, cause, outcome, and remaining retry/redecomposition budgets before redispatch. Replacement packets inherit the remaining recovery budget; changing IDs must not reset it. Record the reason and superseded IDs so retries cannot run alongside replacements. Budget exhaustion leaves the work blocked for a coordinator decision; do not automatically restart it. If no suitable profile is available, mark blocked instead of looping.
 5. On the integrated fixed candidate, run relevant consolidated tests and the actual acceptance flow. Independent review checks both the diff and observations, including failure and boundary paths. A changed candidate invalidates affected review and evidence; repeat only the affected checks plus required integration gates. Publish only after required gates pass.
 
-For provider-controlled units or artifact placement, apply [provider/storage policy](provider-storage-policy.md) before dispatch. Keep actual bindings, receipts, and raw observations in an external local ledger. This does not change the execution packet or the strict verification schema.
+For artifact placement, apply [private storage policy](storage-policy.md). Keep private state and raw observations outside Git. This does not change the execution packet or strict verification schema.
 
 ## Synthetic worked example
 
