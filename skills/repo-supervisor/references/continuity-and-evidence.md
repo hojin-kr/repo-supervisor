@@ -14,7 +14,7 @@ Keep the active `.repo-history/meta.json` entry pointing at a task note. For lon
 
 Do not copy whole conversations or sensitive tool output into history. Store redacted summaries and portable commands; keep raw evidence in an approved location with enough provenance to associate it with the measured revision. Do not fabricate a commit ID for the note's own future commit.
 
-On resume, inspect live status, diff, branch, dependencies, and candidate revision. Reconcile changes since the checkpoint and confirm the prior writer has handed off before writing. Reuse evidence only for the same inputs, revision, and relevant environment; rerun affected checks when they change. Resume the next unmet criterion instead of replaying all work or starting a duplicate task.
+On resume, inspect live status, diff, branch, dependencies, and candidate revision. Reconcile changes since the checkpoint and confirm the prior writer has handed off before writing. Reuse evidence only when its source, asset, configuration, dependency, toolchain, artifact, and relevant runtime inputs still match; the same Git revision alone is insufficient. See [change-impact verification](verification.md#select-checks-by-change-impact) for input identity and targeted invalidation. Rerun affected checks when a relevant input changes, then resume the next unmet criterion instead of replaying all work or starting a duplicate task.
 
 ## Status and acceptance ledger
 
@@ -31,6 +31,8 @@ Use these states in task notes; existing indexes can retain their schema and lin
 | superseded | Replaced by named packets or a newer contract; do not resume it |
 
 Distinguish worker-done, acceptance-verified, integrated, committed, and pushed milestones in the ledger, each tied to its revision. Also record review state. Worker-done cannot satisfy acceptance or integration. Commit success followed by push failure means committed, delivery blocked; retain the exact commit, recheck the remote, and retry a normal fast-forward push when access returns. Do not rerun implementation or create another commit merely because push failed. A non-fast-forward result requires reconciliation and affected verification; never force push. For example, implementation may be complete while acceptance is blocked by an unavailable runtime, or validation may pass while push is pending. An account limit, expired authentication, offline dependency, or unavailable device is a blocker, not proof of a code failure or completed validation. Record what ran and what did not, preserve work, and retry only when the prerequisite changes or within a finite transient retry budget. Do not rotate accounts, invent results, or change credentials to hide a blocker.
+
+Keep issue status separate from PR status. A partial PR merge does not mean the full issue is done; resolve every current issue acceptance criterion and required linked task before marking it complete. Record remaining acceptance or integration work separately from the PR's merge state.
 
 For each criterion record `expected -> observed`, candidate revision, environment, evidence, and `pass / fail / blocked / not-run`. A build or unit suite pass proves only its measured surface. Product completion requires the relevant actual UI or execution environment flow and state, including saved state, failure/cancel paths, or boundaries when the criterion depends on them. For documentation-only skills, exercise realistic decisions with synthetic scenarios and verify installed resource availability; do not claim a downstream application's runtime was tested.
 
