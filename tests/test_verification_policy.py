@@ -54,6 +54,15 @@ class VerificationPolicyDocs(unittest.TestCase):
         self.assertIn('references/verification.md#xcode-builds-and-test-selection', skill)
         self.assertIn('references/continuity-and-evidence.md#status-and-acceptance-ledger', skill)
 
+    def test_unavailable_product_acceptance_can_be_deferred_without_passing_it(self):
+        skill = SKILL.read_text()
+        self.assertIn('user-acceptance exception', skill)
+        self.assertIn('product acceptance is unverified', skill)
+        self.assertIn('exact real-device steps with expected observations', skill)
+        self.assertIn('required repository/server checks', skill)
+        self.assertIn('data-loss, duplicate-transaction, or security risks remain unresolved', skill)
+        self.assertIn('keep it blocked/`NOT RUN`', skill)
+
     def test_superseded_ux_contract_and_environment_errors_stay_scoped(self):
         skill = SKILL.read_text()
         self.assertIn('current user request explicitly supersedes a documented UX contract', skill)

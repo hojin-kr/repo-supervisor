@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "active_task": null,
-  "latest_task": "2026-10-20-verification-scope",
+  "latest_task": "2026-10-20-user-acceptance-deferral",
   "tasks": [
     {
       "id": "2026-10-15-package-skill",
@@ -122,6 +122,18 @@
         "skills/repo-supervisor/SKILL.md",
         "skills/repo-supervisor/references/verification.md",
         "skills/repo-supervisor/references/continuity-and-evidence.md",
+        "tests/test_verification_policy.py"
+      ]
+    },
+    {
+      "id": "2026-10-20-user-acceptance-deferral",
+      "title": "Bound unavailable runtime acceptance without weakening evidence",
+      "status": "ready-for-review",
+      "entry_file": ".repo-history/tasks/2026-10-20-user-acceptance-deferral.md",
+      "last_update": "2026-10-20",
+      "branch": "defer-unavailable-runtime-acceptance",
+      "next_entry_points": [
+        "skills/repo-supervisor/SKILL.md",
         "tests/test_verification_policy.py"
       ]
     }
