@@ -132,6 +132,8 @@
       "entry_file": ".repo-history/tasks/2026-10-20-user-acceptance-deferral.md",
       "last_update": "2026-10-20",
       "branch": "defer-unavailable-runtime-acceptance",
+      "commit": "f0e09051b56097746b1b900fe733118cf78ff0b0",
+      "pr": "https://github.com/hojin-kr/repo-supervisor/pull/2",
       "next_entry_points": [
         "skills/repo-supervisor/SKILL.md",
         "tests/test_verification_policy.py"
