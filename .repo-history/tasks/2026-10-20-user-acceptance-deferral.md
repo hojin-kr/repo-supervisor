@@ -1,0 +1,8 @@
+# Bounded deferral of unavailable runtime acceptance
+
+- Objective: reflect the user's reduced-QA posture in repo-supervisor while preserving honest `NOT RUN` reporting and required product, repository, and safety gates.
+- Baseline: clean `origin/main` at `f7ef810fce1efce884de79dab9083e6a92b1c7eb`; work is isolated on `defer-unavailable-runtime-acceptance`.
+- Changes: allow an unavailable product runtime check to be deferred only when change-impact checks and implementation review suffice to finish implementation; require explicit blocked/`NOT RUN` status, a clear statement that product acceptance remains unverified, and concrete real-device steps with expected observations. Required repository/server checks and unresolved data-loss, duplicate-transaction, or security risks remain blockers. Added a targeted documentation-policy regression test. The README already contains the host/version installation-path note and was left unchanged.
+- Validation: `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p 'test_verification_policy.py' -v` passed all 9 tests; `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p 'test_public_boundary.py' -v` passed both tests; `.repo-history/meta.json` parsed with `python3 -m json.tool`; `git diff --check` passed. No Xcode, Simulator, app runtime, or installed skill was used or changed.
+- Delivery: implementation commit `f0e09051b56097746b1b900fe733118cf78ff0b0` was pushed and confirmed as the remote branch head. Draft PR [#2](https://github.com/hojin-kr/repo-supervisor/pull/2) is open and attached to the task. Merge remains for parent-thread coordination.
+- Resume: inspect PR #2, its checks and review, then coordinate any merge from the parent task. Do not merge from this task.
