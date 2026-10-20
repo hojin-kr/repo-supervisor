@@ -62,6 +62,8 @@ pstack의 원칙을 참고해 독자적으로 작성했으며, [고정 revision�
 
 이 저장소를 내려받은 뒤 저장소 루트에서 실행합니다. 기존 설치가 있으면 먼저 차이를 검토하세요.
 
+Codex의 설치 위치는 host와 버전에 따라 다를 수 있습니다. 2026-10-20 확인한 [공식 로컬 스킬 위치 안내](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills)는 사용자 스킬 경로로 `$HOME/.agents/skills`를 표기합니다. 이 Mac에서 확인한 기존 설치는 `$CODEX_HOME/skills` 아래였습니다. 아래 명령은 그 Mac 관측 경로를 예로 든 것이므로, 다른 host에서는 해당 버전의 공식 안내와 실제 활성 경로를 확인해 사용하세요. 경로가 다르다고 기존 설치를 이동하거나 삭제하지 마세요.
+
 ```sh
 skill_root="${CODEX_HOME:-$HOME/.codex}/skills"
 mkdir -p "$skill_root"
