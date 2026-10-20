@@ -1,5 +1,28 @@
 # Structural learning and project verification
 
+## Select checks by change impact
+
+Choose checks from the changed surface and the user's current acceptance criteria. This is a scope rule, not a universal checklist or fixed test-count gate. An evidence packet, screenshot naming convention, or serialized result schema is a tool for recording evidence, not a product gate unless the current user or project explicitly requires that format; keep the underlying observations and their provenance reviewable:
+
+| Change or claim | Evidence to select | Do not infer |
+| --- | --- | --- |
+| Documentation, policy, or examples only | Document structure, links, and focused tests of the documented decision when available | That the application was built or its runtime was accepted |
+| Source logic or configuration | Focused tests and the relevant build or integration seam; add runtime checks when the criterion depends on runtime behavior | That unrelated screens or configurations need full regression again |
+| UI or visual behavior | Relevant tests/build plus the real affected flow; capture visual evidence when appearance is an acceptance criterion | That a successful build proves the visible result or saved state |
+| Reused build or test evidence | Verify the measured inputs, artifact identity, environment, and raw result provenance | That the same commit alone proves an old artifact is still valid |
+
+Map each acceptance criterion to its needed evidence layer: build, executed tests, runtime behavior, visual output, evidence provenance, or whole-product acceptance. A lower layer cannot prove a higher one. Require only the layers that the current criteria and product risk need. Pick representative paths and failure or boundary cases from the behavior changed; do not copy a historical repetition count, exhaustive matrix, or time limit into a new global gate without current evidence that it is needed. A broad regression is appropriate when the change or explicit risk reaches broad behavior, not merely because it is easy to repeat.
+
+Evidence reuse is source- and environment-bound. Record enough identity to cover the actual build/test inputs: source content and modes, assets and asset-generation inputs, configuration, dependency lock state, scheme/arguments, SDK and toolchain, destination, and relevant runtime/fixture state. Record the built product identity and the raw test result bundle (such as `.xcresult`) when those are used as evidence. The repository snapshot helper does not fingerprint ignored files, external tools, or mutable runtime state; identify those separately. Reuse a product or observation only when its relevant input identity and the acceptance criterion still match. A relevant input change invalidates only the affected evidence and dependent checks. A documentation-only change does not by itself require repeating a full application regression.
+
+## Xcode builds and test selection
+
+An XcodeBuildMCP or other build-tool timeout means the caller stopped waiting; it does not establish that the child build or test process exited. Before starting a retry, inspect the owned operation or process ID, its current state, logs, and result-bundle status. If it is still running or its outcome is unknown, do not launch a duplicate. Resume observation or wait for a confirmed terminal state; only stop a process through an authorized control and after confirming it is the task's owned process. Keep one active writer per shared `DerivedData` directory; serialize work that shares it.
+
+If direct `xcodebuild` is a supported fallback, keep the same intended scheme, destination, configuration, and test scope. Preserve the original stdout and stderr separately, the actual command exit status, and the `.xcresult` bundle at a unique retained path. Record the command and relevant environment, and retain raw output for review; a summarized MCP or shell message is not a substitute. Use a command runner that reports the build process's exit status rather than a pipeline's last command status. Keep raw logs and result bundles outside Git.
+
+For selected tests, verify that the requested class or test selector exists and that at least one test was actually selected and executed. A successful command exit with zero selected or executed tests is `NOT RUN`, not `PASS`. When a class name is wrong or discovery differs from expectation, report the requested selector and the discovered names needed to correct it, then rerun the exact intended tests. Do not replace an empty selection with a broader test run unless the broader scope is required by the acceptance criteria.
+
 ## Frame the outcome, then choose the smallest route
 
 Restate the user's outcome, core invariant, exclusions, and observable acceptance in your own words before implementation. Normally do this internally and proceed; surface a short statement when it helps the user steer. Ask only about material intent, scope, or authority that source inspection or a safe experiment cannot resolve. Existing implementation delivery authorization and required repository gates still apply.

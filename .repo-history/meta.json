@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "active_task": null,
-  "latest_task": "2026-10-19-codex-only",
+  "latest_task": "2026-10-20-verification-scope",
   "tasks": [
     {
       "id": "2026-10-15-package-skill",
@@ -106,6 +106,23 @@
         "skills/repo-supervisor/SKILL.md",
         "skills/repo-supervisor/scripts/coordination_policy.py",
         "tests/test_codex_only.py"
+      ]
+    },
+    {
+      "id": "2026-10-20-verification-scope",
+      "title": "Scope verification to changed behavior and preserve Xcode evidence",
+      "status": "ready-for-review",
+      "entry_file": ".repo-history/tasks/2026-10-20-verification-scope.md",
+      "last_update": "2026-10-20",
+      "branch": "improve-verification-scope",
+      "commit": "3034d3d3086c980d1ff8328615c4cfc4f4b3cad4",
+      "pr": "https://github.com/hojin-kr/repo-supervisor/pull/1",
+      "next_entry_points": [
+        "README.md",
+        "skills/repo-supervisor/SKILL.md",
+        "skills/repo-supervisor/references/verification.md",
+        "skills/repo-supervisor/references/continuity-and-evidence.md",
+        "tests/test_verification_policy.py"
       ]
     }
   ]

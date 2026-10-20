@@ -42,7 +42,7 @@ ChatGPT Codex와 사용 가능한 기본 도구만 사용하며, Codex 모델의
 
 반복 피드백은 먼저 타입·불변량·경계, 기존 린트·테스트·CI로 옮길 수 있는지 판단하고, 자동화할 수 없는 판단만 짧은 지침으로 남깁니다. 목표를 내부적으로 재진술하고, 관찰로 풀 수 있는 질문은 안전한 프로토타입과 실측으로 해결합니다. 구현자의 테스트 기대값도 독립 검수 대상입니다.
 
-[프로젝트 검증 절차](skills/repo-supervisor/references/verification.md)는 실제 사용자 표면을 구동하고 증거를 보존하는 작은 레시피를 만드는 방법을 설명합니다. 함께 제공하는 JSON 패킷과 Python 표준 라이브러리 도구는 명령·예상 결과·불변량을 커밋/소스 스냅샷·환경에 연결합니다. 실패·`NOT RUN`·오래된 증거는 통과하지 않으며, 템플릿의 수동 항목도 실제 driver가 생기기 전에는 통과하지 않습니다. 도구는 패킷의 명령을 실행하므로 먼저 신뢰성과 부작용을 확인해야 합니다. 전후 스냅샷 사이에서 소스를 변경한 뒤 복원하는 동작은 탐지하지 못하므로, 불변 실행이 필요한 경우 외부에서 쓰기를 차단한 소스나 식별된 불변 산출물로 독립 검증해야 합니다.
+[프로젝트 검증 절차](skills/repo-supervisor/references/verification.md)는 변경 영향에 맞는 최소 검증 선택, Xcode 결과의 출처 보존, 실제 사용자 표면을 구동하는 방법을 설명합니다. 함께 제공하는 JSON 패킷과 Python 표준 라이브러리 도구는 명령·예상 결과·불변량을 커밋/소스 스냅샷·환경에 연결합니다. 실패·`NOT RUN`·오래된 증거는 통과하지 않으며, 템플릿의 수동 항목도 실제 driver가 생기기 전에는 통과하지 않습니다. 도구는 패킷의 명령을 실행하므로 먼저 신뢰성과 부작용을 확인해야 합니다. 전후 스냅샷 사이에서 소스를 변경한 뒤 복원하는 동작은 탐지하지 못하므로, 불변 실행이 필요한 경우 외부에서 쓰기를 차단한 소스나 식별된 불변 산출물로 독립 검증해야 합니다.
 
 저장소 자체 회귀 검증은 추가 설치 없이 실행합니다.
 
@@ -62,16 +62,19 @@ pstack의 원칙을 참고해 독자적으로 작성했으며, [고정 revision�
 
 이 저장소를 내려받은 뒤 저장소 루트에서 실행합니다. 기존 설치가 있으면 먼저 차이를 검토하세요.
 
+Codex의 설치 위치는 host와 버전에 따라 다를 수 있습니다. 2026-10-20 확인한 [공식 로컬 스킬 위치 안내](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills)는 사용자 스킬 경로로 `$HOME/.agents/skills`를 표기합니다. 이 Mac에서 확인한 기존 설치는 `$CODEX_HOME/skills` 아래였습니다. 아래 명령은 그 Mac 관측 경로를 예로 든 것이므로, 다른 host에서는 해당 버전의 공식 안내와 실제 활성 경로를 확인해 사용하세요. 경로가 다르다고 기존 설치를 이동하거나 삭제하지 마세요.
+
 ```sh
-mkdir -p "$HOME/.agents/skills"
-if [ -e "$HOME/.agents/skills/repo-supervisor" ]; then
+skill_root="${CODEX_HOME:-$HOME/.codex}/skills"
+mkdir -p "$skill_root"
+if [ -e "$skill_root/repo-supervisor" ]; then
   echo "repo-supervisor is already installed; review differences before updating."
 else
-  cp -R skills/repo-supervisor "$HOME/.agents/skills/repo-supervisor"
+  cp -R skills/repo-supervisor "$skill_root/repo-supervisor"
 fi
 ```
 
-Codex를 다시 시작해 스킬 목록을 갱신합니다. 스킬 구조는 [공식 OpenAI 문서](https://learn.chatgpt.com/docs/build-skills)를 참고하세요.
+저장소의 `skills/repo-supervisor`가 원본입니다. 사용 중인 Codex의 `CODEX_HOME`을 확인하고 그 아래 `skills/repo-supervisor`에 설치하세요. 이미 설치된 디렉터리는 차이를 검토한 뒤 갱신하고, 다른 작업 저장소의 복사본만 바꾸지 마세요. Codex를 다시 시작해 스킬 목록을 갱신합니다. 스킬 구조는 [공식 OpenAI 문서](https://learn.chatgpt.com/docs/build-skills)를 참고하세요.
 
 ## 사용 예시
 

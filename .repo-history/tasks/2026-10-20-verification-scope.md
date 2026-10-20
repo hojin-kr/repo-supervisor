@@ -1,0 +1,8 @@
+# Change-impact verification and Xcode evidence
+
+- Objective: improve the repo-supervisor source of truth with bounded verification choices, safe Xcode recovery, and acceptance-state clarity, without copying project-specific thresholds into global policy.
+- Baseline: `origin/main` was `03a7e163cbc6d63378fb4ca4ec2345701aef59bb`. The clean repository package matched the installed skill tree. A separate checkout contained preexisting user changes and was left untouched.
+- Changes: document change-impact-based test selection; source-, asset-, configuration-, toolchain-, artifact-, and runtime-bound evidence reuse; non-product-gate evidence formats; Xcode timeout and shared `DerivedData` handling; retained `xcodebuild` stdout/stderr/exit/`.xcresult`; nonempty test selector requirements; UX-contract updates when a current request supersedes them; issue completion independent from partial PR merge; and scoped tool/network diagnostics. Align Codex installation instructions with `CODEX_HOME`.
+- Validation: `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -v` passed all 37 tests. `git diff --check` passed. Documentation and host-test changes only; Xcode and Simulator were not used.
+- Delivery: implementation commit `3034d3d3086c980d1ff8328615c4cfc4f4b3cad4` is on `improve-verification-scope`; the remote branch was verified at the same SHA. Draft PR [#1](https://github.com/hojin-kr/repo-supervisor/pull/1) is open. No merge or installed-skill update was performed; review is the next step.
+- Resume: inspect the PR and current `.repo-history/meta.json`, then update the active installation only after the change is accepted.
